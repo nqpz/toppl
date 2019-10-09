@@ -80,7 +80,7 @@ typedef struct {
   bool (*next)(runner_state_t *runner_state, memory_t* *results, size_t *n_results);
 } runner_t;
 
-static int64_t get_wall_time_ms() {
+static int64_t get_wall_time_us() {
   struct timeval time;
   assert(gettimeofday(&time, NULL) == 0);
   return time.tv_sec * 1000000 + time.tv_usec;

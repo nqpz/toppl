@@ -74,7 +74,7 @@ int main(int argc, char* *argv) {
         });
 
       if (timing) {
-        timing_start = get_wall_time_ms();
+        timing_start = get_wall_time_us();
       }
       runner.init(&runner_state, addrs, &mem);
       bool more_unfinished = true;
@@ -95,7 +95,7 @@ int main(int argc, char* *argv) {
         puts("no");
       }
       if (timing) {
-        timing_end = get_wall_time_ms();
+        timing_end = get_wall_time_us();
         int64_t timing_diff = timing_end - timing_start;
         fprintf(stderr, "timing: query took %lu microseconds\n", timing_diff);
       }
