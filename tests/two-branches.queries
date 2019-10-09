@@ -1,0 +1,10 @@
+foo(bar(test)).
+yes
+
+foo(bar(T)).
+yes{T=test}
+
+foo(T).
+yes{T=baz(test)}
+yes{T=car(test)}
+yes{T=bar(test)}

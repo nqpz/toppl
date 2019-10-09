@@ -1,0 +1,45 @@
+append(foo, list_empty, list(foo, list_empty)).
+yes
+
+append(foo, list_empty, list(Foo, list_empty)).
+yes{Foo=foo}
+
+append(A, B, list(a, b)).
+yes{A=a, B=b}
+
+append(A, B, list(_, _)).
+yes{A=_0, B=_1}
+
+append(A, B, list(B, _)).
+yes{A=_1, B=_1}
+
+lookup(test, list(test, list_end)).
+yes
+
+lookup(test, list(test, list(test, list_end))).
+yes
+yes
+
+lookup(T, list(foo, list(bar, list_end))).
+yes{T=foo}
+yes{T=bar}
+
+lookup(dinosaur, list(T, list(U, list(V, list_end)))).
+yes{T=dinosaur, U=_0, V=_1}
+yes{U=dinosaur, V=_0, T=_1}
+yes{V=dinosaur, T=_0, U=_1}
+
+test_eval0(R).
+yes{R=list(val(stuff), list_empty)}
+
+test_eval1(R).
+yes{R=val(bar)}
+
+test_eval2(R).
+yes{R=list(val(baz), list(val(bar), list_empty))}
+
+test_eval3(R).
+yes{R=val(a)}
+
+test_eval4(R).
+yes{R=list(val(s), list(s, list(val(z), list_empty)))}

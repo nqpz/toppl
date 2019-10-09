@@ -1,0 +1,11 @@
+eq(X, X).
+yes{X=_0}
+
+eq(X, test).
+yes{X=test}
+
+eq(foo(bar), Y).
+yes{Y=foo(bar)}
+
+eq(foo, bar).
+no

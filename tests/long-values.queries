@@ -1,0 +1,5 @@
+foo(test(a, b, c, d)).
+yes
+
+foo(test(a, b, T, d)).
+yes{T=c}

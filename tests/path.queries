@@ -1,0 +1,20 @@
+select(X, list(a, list(b, list(c, list_empty))), T).
+yes{X=a, T=list(b, list(c, list_empty))}
+yes{X=b, T=list(a, list(c, list_empty))}
+yes{X=c, T=list(a, list(b, list_empty))}
+
+select_conn(a, b, list(conn(a, b), list_end), C).
+yes{C=list_end}
+
+select_conn(b, a, list(conn(a, b), list_end), C).
+yes{C=list_end}
+
+path(list(conn(a, b), list_end), a, b, P).
+yes{P=list(conn(a, b), list_empty)}
+
+human_path(sock, foot, P).
+yes{P=list(conn(sock, foot), list_empty)}
+yes{P=list(conn(sock, leg), list(conn(leg, foot), list_empty))}
+yes{P=list(conn(sock, leg), list(conn(leg, trousers), list(conn(trousers, sock), list(conn(sock, foot), list_empty))))}
+yes{P=list(conn(sock, trousers), list(conn(trousers, leg), list(conn(leg, foot), list_empty)))}
+yes{P=list(conn(sock, trousers), list(conn(trousers, leg), list(conn(leg, sock), list(conn(sock, foot), list_empty))))}

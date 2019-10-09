@@ -1,0 +1,11 @@
+dup(zero, zero).
+yes
+
+dup(succ(zero), succ(succ(zero))).
+yes
+
+dup(T, succ(succ(succ(zero)))).
+no
+
+dup(succ(succ(zero)), succ(succ(succ(T)))).
+yes{T=succ(zero)}

@@ -1,0 +1,21 @@
+conn(bee, flower).
+yes
+
+conn(flower, bee).
+no
+
+path(bee, flower).
+yes
+
+path(bee, grass).
+yes
+
+path(bird, earth).
+yes
+
+path(T, earth).
+yes{T=bee}
+yes{T=bird}
+yes{T=flower}
+yes{T=nest}
+yes{T=grass}
