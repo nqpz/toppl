@@ -2,12 +2,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Toppl.P6 where
 
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, catMaybes)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Text.Prettyprint.Doc
 import Data.Array (Array)
-import Data.Maybe (catMaybes)
 import qualified Data.List as L
 import qualified Data.Array as A
 import qualified Data.Map as M
@@ -83,7 +82,7 @@ instance Pretty Prolog where
                                               (map prettyUni unis)) <> dot)
                             ] ++ maybe [] ((: []) . indent 2 . ("->" <>)
                                            . prettyComposite' "continue")
-                            (fmap (map prettyVar) $ ruleContinue r))
+                            (map prettyVar <$> ruleContinue r))
 
             where prettyVar = \case
                     Wildcard t -> "_" <> pretty t
@@ -128,7 +127,7 @@ instance Pretty Rule where
                                             (map (\(a, b) -> pretty a <> equals <> pretty b) unis)) <> dot)
                             ] ++ maybe [] ((: []) . indent 2 . ("->" <>)
                                            . prettyComposite' "continue")
-                            (fmap (map pretty) $ ruleContinue r))
+                            (map pretty <$> ruleContinue r))
     where prettyInitialVar (addr, (s, p1, p2)) =
             pretty addr <> equals <> pretty s <> prettyComposite' "" (map pretty $ catMaybes [p1, p2])
 

@@ -2,7 +2,7 @@
 {-# LANGUAGE LambdaCase #-}
 module Toppl.P5 where
 
-import Data.Maybe (fromMaybe, mapMaybe)
+import Data.Maybe (mapMaybe)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Text.Prettyprint.Doc
@@ -16,7 +16,7 @@ import Toppl.Base
 import qualified Toppl.P6 as P6
 
 
-data Prolog = Prolog { prologRuleGroups :: [RuleGroup]
+newtype Prolog = Prolog { prologRuleGroups :: [RuleGroup]
                      }
   deriving (Show)
 
@@ -44,7 +44,7 @@ instance VarsOf Action where
 instance VarsOf Rule where
   varsOf r = S.unions [ varsOf $ ruleParams r
                       , varsOf $ ruleBody r
-                      , fromMaybe S.empty $ fmap varsOf $ ruleContinue r
+                      , maybe S.empty varsOf $ ruleContinue r
                       ]
 
 instance Pretty Prolog where
@@ -149,7 +149,7 @@ useIntValuesAndVars values prolog =
                      , P6.ruleInitialVars = M.fromList (zip (M.keys initialVars) initialVars1) `M.union` initialVars2
                      , P6.ruleNVars = nVars
                      , P6.ruleUnifications = unifications
-                     , P6.ruleContinue = fmap (map replaceVar) $ ruleContinue r
+                     , P6.ruleContinue = map replaceVar <$> ruleContinue r
                      , P6.ruleVarNames = A.array (0, length vars - 1) $ zip [0..]
                                          $ map (\(n, i) -> T.concat [ formatName n
                                                                     , "_"
@@ -160,7 +160,7 @@ useIntValuesAndVars values prolog =
                                     Var n i -> Just (n, i)
                                     Wildcard{} -> Nothing)
                        $ S.elems $ varsOf r
-                varToInt = M.fromList $ zip (map (\(n, i) -> Var n i) vars) [0..]
+                varToInt = M.fromList $ zip (map (uncurry Var) vars) [0..]
 
                 replaceVar :: Var -> P6.Var
                 replaceVar = \case

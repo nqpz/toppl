@@ -31,7 +31,7 @@ data Query = Query { queryPred :: Text
                    }
   deriving (Show)
 
-data Result = Result { resultMap :: M.Map Text Value }
+newtype Result = Result { resultMap :: M.Map Text Value }
   deriving (Show, Eq, Ord)
 
 data Cell = Cell { cellShape :: Int

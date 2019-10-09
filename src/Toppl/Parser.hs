@@ -136,7 +136,7 @@ pResult = do
   Interpreter.Result <$> (braces (M.fromList <$> pResultMapping `sepBy` symbol ",") <|> return M.empty)
 
 pResults :: Parser [Interpreter.Result]
-pResults = do
+pResults =
   try (string "no\n" >> return []) <|> pResult `sepEndBy` string "\n"
 
 pQA :: Parser (Interpreter.Query, [Interpreter.Result])

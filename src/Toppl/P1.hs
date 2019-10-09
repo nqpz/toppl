@@ -4,15 +4,14 @@ module Toppl.P1 where
 import Data.Text (Text)
 import Data.Text.Prettyprint.Doc
 import qualified Data.Map as M
-import Data.List (sortBy)
-import Data.Ord (comparing)
+import Data.List (sortOn)
 import Control.Monad.State
 
 import Toppl.Base
 import qualified Toppl.P2 as P2
 
 
-data Prolog = Prolog { prologRules :: [Rule] }
+newtype Prolog = Prolog { prologRules :: [Rule] }
   deriving (Show)
 
 data Rule = Rule { ruleName :: Text
@@ -47,7 +46,7 @@ type GroupM = State (Int, M.Map Predicate (Int, [P2.Rule]))
 
 transform :: Prolog -> P2.Prolog
 transform (Prolog rules) =
-  let groups = sortBy (comparing (fst . snd)) $ M.assocs $ snd
+  let groups = sortOn (fst . snd) $ M.assocs $ snd
                $ execState (mapM_ transRule rules) (0, M.empty)
   in P2.Prolog $ map (\(p, (_, locRules)) -> P2.RuleGroup p locRules) groups
   where transRule :: Rule -> GroupM ()

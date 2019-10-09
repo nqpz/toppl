@@ -7,7 +7,6 @@ import qualified Data.List as L
 import qualified Data.Text as T
 import qualified Data.Map as M
 import Data.Maybe (mapMaybe)
-import Data.Ord (comparing)
 import Data.Text (Text)
 import qualified Data.Text.IO as T
 import Data.Text.Prettyprint.Doc
@@ -111,7 +110,7 @@ compileC = compileC' (CodeGen.C.AllEntryPoints, Nothing, False)
 compileC' :: (CodeGen.C.EntryPoints, Maybe String, Bool) -> [String] -> IO ()
 compileC' options@(opt1, opt2, opt3) = \case
   [program] -> compileC'' options program
-  "-e" : entryPoints : rest -> do
+  "-e" : entryPoints : rest ->
     case Parser.parsePredicates $ T.pack entryPoints of
       Left err -> hPutStrLn stderr ("error: " ++ err)
       Right entryPoints' -> compileC' (CodeGen.C.SomeEntryPoints (L.nub entryPoints'), opt2, opt3) rest
@@ -137,8 +136,7 @@ compileC'' (entryPoints, output, debug) input = do
         Right program ->
           case CodeGen.C.generateCode entryPoints debug program of
             Left err -> hPutStrLn stderr ("error: " ++ err)
-            Right cCode -> do
-              doCompile cPath outPath' cCode
+            Right cCode -> doCompile cPath outPath' cCode
 
 doCompile :: FilePath -> FilePath -> Text -> IO ()
 doCompile cPath outPath cCode = do
@@ -254,7 +252,7 @@ testPrograms = \case
 
 testPrograms' :: [TestApproach] -> [FilePath] -> IO ()
 testPrograms' approaches paths = do
-  paths' <- (L.nub . concat) <$> mapM expandPath paths
+  paths' <- L.nub . concat <$> mapM expandPath paths
   let programs = filter ((== ".pl") . F.takeExtension) paths'
   queriesPaths <- forM programs $ \path -> do
     let path' = F.replaceExtension path ".queries"
@@ -267,14 +265,14 @@ testPrograms' approaches paths = do
                          t <- T.readFile path
                          q' <- case q of
                            Nothing -> return Nothing
-                           Just pathQueries -> (Just . (pathQueries,)) <$> T.readFile pathQueries
+                           Just pathQueries -> Just . (pathQueries,) <$> T.readFile pathQueries
                          return ((path, t), q')) programs'
   hasError <- flip execStateT False $ do
     lift $ hPutStrLn stderr ("Testing " ++ L.intercalate ", " (map (\((path, _), _) -> "'" ++ path ++ "'") programs'') ++ "...")
     forM_ programs'' $ \p ->
       forM_ approaches $ \a -> do
         hasErrorCur <- lift $ testProgram p a
-        when (hasErrorCur) $ put True
+        when hasErrorCur $ put True
   when hasError exitFailure
 
 expandPath :: FilePath -> IO [FilePath]
@@ -307,7 +305,7 @@ testProgram ((path, program), qall) approach =
           doCompile cPath outPath cCode
           case qall of
             Nothing -> return False
-            Just (pathQueries, qas) -> do
+            Just (pathQueries, qas) ->
               checkEverything (qas, pathQueries) $ \query -> do
                 let input = renderString $ layoutSmart defaultLayoutOptions $ pretty query
                 (exitcode, output, outputErr) <- readProcessWithExitCode outPath ["-b"] input
@@ -367,7 +365,7 @@ matchOneTry (Interpreter.Result expected) (Interpreter.Result actual)
   | otherwise =
       let m = and <$> zipWithM (\(_, ve) (_, va) -> canEqual ve va) (assocs' expected) (assocs' actual)
       in evalState m (M.empty, M.empty)
-  where assocs' = L.sortBy (comparing fst) . M.assocs
+  where assocs' = L.sortOn fst . M.assocs
 
         canEqual :: Interpreter.Value -> Interpreter.Value
                  -> State (M.Map Text Text, M.Map Text Text) Bool

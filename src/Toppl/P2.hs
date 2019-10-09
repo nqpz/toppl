@@ -15,7 +15,7 @@ import Toppl.Base
 import qualified Toppl.P3 as P3
 
 
-data Prolog = Prolog { prologRuleGroups :: [RuleGroup] }
+newtype Prolog = Prolog { prologRuleGroups :: [RuleGroup] }
   deriving (Show)
 
 data RuleGroup = RuleGroup { rgPred :: Predicate
@@ -57,7 +57,7 @@ instance Pretty Call where
 
 type CFG = M.Map Predicate (S.Set Predicate)
 
-data CFG' = CFG' { unCFG' :: CFG }
+newtype CFG' = CFG' { unCFG' :: CFG }
 
 instance Semigroup CFG' where
   CFG' m <> CFG' n = CFG' $ M.unionWith S.union m n
@@ -86,7 +86,7 @@ buildCFG (Prolog ruleGroups) =
           where predPreds p = fromMaybe S.empty (M.lookup p cfg)
 
 isRecursive :: CFG -> Predicate -> Bool
-isRecursive cfg p = p `S.member` (fromMaybe S.empty $ M.lookup p cfg)
+isRecursive cfg p = p `S.member` fromMaybe S.empty (M.lookup p cfg)
 
 
 transform :: Prolog -> P3.Prolog
@@ -155,7 +155,7 @@ transform prolog = P3.Prolog $ map transRuleGroup $ prologRuleGroups prolog
                                                                             ])) nthRule
                                                    in (var, [P3.Unify (Variable var) val])
                                     ) [(0::Int)..] (ruleParams r)
-                  in map (P3.Rule params) $ map (concat initialUnifications ++) $ replBody $ ruleBody r
+                  in map (P3.Rule params . (concat initialUnifications ++)) $ replBody $ ruleBody r
 
                 replBody :: [Call] -> [[P3.Action]]
                 replBody [] = [[]]
@@ -163,7 +163,7 @@ transform prolog = P3.Prolog $ map transRuleGroup $ prologRuleGroups prolog
                   let callPred = Predicate (callName call) (length $ callArgs call)
                   in case M.lookup callPred repls of
                     Just repl -> map (P3.Recurse (applyRepl repl (callArgs call)) :) (replBody calls)
-                    Nothing -> concatMap (\rest -> map (\cur -> cur ++ rest)
+                    Nothing -> concatMap (\rest -> map (++ rest)
                                                    $ unify callPred (callArgs call)) (replBody calls)
 
                 unify :: Predicate -> [Value] -> [[P3.Action]]

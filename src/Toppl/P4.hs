@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Toppl.P4 where
 
-import Data.Maybe (fromMaybe, catMaybes)
+import Data.Maybe (catMaybes)
 import Data.Text.Prettyprint.Doc
 import qualified Data.Set as S
 import Control.Applicative ((<$>), (<*>))
@@ -11,7 +11,7 @@ import Toppl.Base
 import qualified Toppl.P5 as P5
 
 
-data Prolog = Prolog { prologRuleGroups :: [RuleGroup]
+newtype Prolog = Prolog { prologRuleGroups :: [RuleGroup]
                      }
   deriving (Show)
 
@@ -38,7 +38,7 @@ instance VarsOf Action where
 instance VarsOf Rule where
   varsOf r = S.unions [ varsOf $ ruleParams r
                       , varsOf $ ruleBody r
-                      , fromMaybe S.empty $ fmap varsOf $ ruleContinue r
+                      , maybe S.empty varsOf $ ruleContinue r
                       ]
 
 instance Pretty Prolog where
@@ -80,12 +80,12 @@ transform prolog = P5.Prolog (map transRG $ prologRuleGroups prolog)
           return (P5.Rule (ruleParams r) <$> body <*> pure (ruleContinue r))
 
         transBody :: [Action] -> TransformerM (Maybe [P5.Action])
-        transBody as = fmap concat <$> lmToMl <$> mapM transAction as
+        transBody as = fmap concat . lmToMl <$> mapM transAction as
 
         transAction :: Action -> TransformerM (Maybe [P5.Action])
         transAction (Unify a b) = case (a, b) of
           (Atom t, Atom u) -> toMaybeM (t == u) $ return $ Just []
-          (Compound t ts, Compound u us) -> do
+          (Compound t ts, Compound u us) ->
             toMaybeM (t == u && length ts == length us)
             $ transBody $ zipWith Unify ts us
           (Variable tv@(Var tn ti), u) ->
@@ -94,7 +94,7 @@ transform prolog = P5.Prolog (map transRG $ prologRuleGroups prolog)
               Variable uv@(Var un ui) ->
                 case tv == uv of
                   True -> return $ Just []
-                  False -> do
+                  False ->
                     return $ Just [P5.Unify dest $ ActualVar un ui]
               Variable Wildcard{} -> return $ Just []
               Atom ua -> do

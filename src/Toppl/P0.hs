@@ -14,7 +14,7 @@ import qualified Toppl.Base as Base
 import qualified Toppl.P1 as P1
 
 
-data Prolog = Prolog { prologRules :: [Rule] }
+newtype Prolog = Prolog { prologRules :: [Rule] }
   deriving (Show)
 
 data Rule = Rule { ruleName :: Text

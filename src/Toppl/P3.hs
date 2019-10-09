@@ -12,7 +12,7 @@ import Toppl.Base
 import qualified Toppl.P4 as P4
 
 
-data Prolog = Prolog { prologRuleGroups :: [RuleGroup]
+newtype Prolog = Prolog { prologRuleGroups :: [RuleGroup]
                      }
   deriving (Show)
 
@@ -102,7 +102,7 @@ transform prolog =
   where transformRG :: Bool -> RuleGroup -> TransformerM P4.RuleGroup
         transformRG force (RuleGroup p rs npo pcs) = do
           rs' <- mapM (transformRule p force) rs
-          let rs'' = rs' ++ if force then [baseCase p] else []
+          let rs'' = rs' ++ [baseCase p | force]
           return $ P4.RuleGroup p rs'' npo pcs
 
         baseCase p = P4.Rule { P4.ruleParams = [stackAtomVar, stackVar] ++ replicate (predNParams p - 2) (Wildcard (Name Gen "ListEmptyCase"))
@@ -231,7 +231,7 @@ hasLimitedRecurse :: [Bool] -> Prolog -> Bool
 hasLimitedRecurse forces prolog = all (all (okActions . ruleBody) . rgRules)
                                   $ map snd $ filter fst $ zip forces $ prologRuleGroups prolog
   where okActions :: [Action] -> Bool
-        okActions = null . filter isRecurse
+        okActions = not . any isRecurse
 
 isRecurse :: Action -> Bool
 isRecurse (Recurse (arg : _)) = arg /= noStack
